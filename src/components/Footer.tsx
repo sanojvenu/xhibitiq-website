@@ -130,11 +130,11 @@ export default function Footer({ onOpenProjectModal }: FooterProps) {
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@xhibitiq.com" className="flex items-center gap-2 hover:text-[#111318] transition-colors">
+                <a href="mailto:info@xhibitiq.com" className="flex items-center gap-2 hover:text-[#111318] transition-colors">
                   <span className="w-5 h-5 rounded-full bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                     <Mail size={11} />
                   </span>
-                  <span>hello@xhibitiq.com</span>
+                  <span>info@xhibitiq.com</span>
                 </a>
               </li>
             </ul>

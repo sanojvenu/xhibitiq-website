@@ -10,6 +10,8 @@ interface ProjectModalProps {
 
 export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -36,12 +38,32 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      // Auto close after 3 seconds
-    }, 3000);
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          services: selectedServices,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Something went wrong.");
+      }
+
+      setSubmitted(true);
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to send. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -211,12 +233,28 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
               </div>
 
               <div className="pt-2">
+                {errorMsg && (
+                  <p className="text-red-500 text-sm mb-3 text-center font-medium">{errorMsg}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#FF7A00] via-[#FF7A00] to-[#F43B24] text-white font-semibold text-sm shadow-brand-glow hover:shadow-brand-glow-lg transition-all duration-300 flex items-center justify-center gap-2 group"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#FF7A00] via-[#FF7A00] to-[#F43B24] text-white font-semibold text-sm shadow-brand-glow hover:shadow-brand-glow-lg transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <span>Submit Inquiry</span>
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Submit Inquiry</span>
+                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
